@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import axios from 'axios'
+import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -50,7 +50,7 @@ export default function LogBugPage() {
     setErrorMsg('')
 
     try {
-      await axios.post('/api/bugs', {
+      await api.post('/api/bugs', {
         ...form,
         estimated_fix_hours: parseFloat(form.estimated_fix_hours),
       })
@@ -59,7 +59,7 @@ export default function LogBugPage() {
       setTimeout(() => setStatus('idle'), 3000)
     } catch (err) {
       setStatus('error')
-      if (axios.isAxiosError(err) && err.response?.data?.error) {
+      if (api.isAxiosError(err) && err.response?.data?.error) {
         setErrorMsg(err.response.data.error)
       } else {
         setErrorMsg('Failed to log bug. Please try again.')

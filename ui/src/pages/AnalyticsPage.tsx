@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '@/lib/api'
 import {
   PieChart,
   Pie,
@@ -57,10 +57,10 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      axios.get<ProgressDistItem[]>('/api/analytics/progress-distribution'),
-      axios.get<WeeklySeverityItem[]>('/api/analytics/weekly-severity'),
-      axios.get<AvgDevToLive>('/api/analytics/avg-dev-to-live'),
-      axios.get<FunnelItem[]>('/api/analytics/funnel'),
+      api.get<ProgressDistItem[]>('/api/analytics/progress-distribution'),
+      api.get<WeeklySeverityItem[]>('/api/analytics/weekly-severity'),
+      api.get<AvgDevToLive>('/api/analytics/avg-dev-to-live'),
+      api.get<FunnelItem[]>('/api/analytics/funnel'),
     ]).then(([pd, ws, avg, fn]) => {
       setProgressDist(pd.data.filter((d) => d.count > 0))
       setWeeklySeverity(ws.data)

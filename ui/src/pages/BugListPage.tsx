@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import axios from 'axios'
+import api from '@/lib/api'
 import { format } from 'date-fns'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -72,7 +72,7 @@ export default function BugListPage() {
       selectedSeverity.forEach((s) => params.append('severity', s))
       if (dateRange !== 'all_time') params.set('date_range', dateRange)
       if (reporterName !== '__all__') params.set('reporter_name', reporterName)
-      const res = await axios.get<Bug[]>(`/api/bugs?${params.toString()}`)
+      const res = await api.get<Bug[]>(`/api/bugs?${params.toString()}`)
       setBugs(res.data)
     } catch (err) {
       console.error(err)
@@ -86,7 +86,7 @@ export default function BugListPage() {
   }, [fetchBugs])
 
   useEffect(() => {
-    axios.get<string[]>('/api/bugs/reporters').then((res) => setReporters(res.data))
+    api.get<string[]>('/api/bugs/reporters').then((res) => setReporters(res.data))
   }, [])
 
   const toggleProgress = (value: string) => {
