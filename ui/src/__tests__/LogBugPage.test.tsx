@@ -1,11 +1,14 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
-import axios from 'axios'
+import api from '@/lib/api'
 import LogBugPage from '../pages/LogBugPage'
 
-vi.mock('axios')
-const mockedAxios = vi.mocked(axios, true)
+vi.mock('@/lib/api', () => ({
+  default: { get: vi.fn(), post: vi.fn() },
+}))
+
+const mockedPost = vi.mocked(api.post)
 
 function renderPage() {
   return render(<LogBugPage />)
@@ -33,7 +36,7 @@ describe('LogBugPage', () => {
   })
 
   it('shows success message after successful submission', async () => {
-    mockedAxios.post = vi.fn().mockResolvedValue({ data: { id: 1 } })
+    mockedPost.mockResolvedValue({ data: { id: 1 } })
 
     renderPage()
     const user = userEvent.setup()
@@ -51,11 +54,10 @@ describe('LogBugPage', () => {
   })
 
   it('shows error message when API call fails', async () => {
-    mockedAxios.post = vi.fn().mockRejectedValue({
+    mockedPost.mockRejectedValue({
       isAxiosError: true,
       response: { data: { error: 'Database error' } },
     })
-    mockedAxios.isAxiosError = vi.fn().mockReturnValue(true)
 
     renderPage()
 

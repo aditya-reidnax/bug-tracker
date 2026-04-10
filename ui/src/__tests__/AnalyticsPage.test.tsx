@@ -1,10 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
-import axios from 'axios'
+import api from '@/lib/api'
 import AnalyticsPage from '../pages/AnalyticsPage'
 
-vi.mock('axios')
-const mockedAxios = vi.mocked(axios, true)
+vi.mock('@/lib/api', () => ({
+  default: { get: vi.fn() },
+}))
+
+const mockedGet = vi.mocked(api.get)
 
 const MOCK_PROGRESS_DIST = [
   { stage: 'Not Started', count: 5 },
@@ -25,7 +28,7 @@ const MOCK_AVG = { avg_hours: 6.5, live_count: 6 }
 const MOCK_FUNNEL = MOCK_PROGRESS_DIST.map((d, i) => ({ ...d, order: i }))
 
 function setupMocks() {
-  mockedAxios.get = vi.fn().mockImplementation((url: string) => {
+  mockedGet.mockImplementation((url: string) => {
     if (url.includes('progress-distribution')) return Promise.resolve({ data: MOCK_PROGRESS_DIST })
     if (url.includes('weekly-severity'))       return Promise.resolve({ data: MOCK_WEEKLY })
     if (url.includes('avg-dev-to-live'))        return Promise.resolve({ data: MOCK_AVG })
@@ -60,7 +63,7 @@ describe('AnalyticsPage', () => {
   })
 
   it('displays N/A when avg_hours is null', async () => {
-    mockedAxios.get = vi.fn().mockImplementation((url: string) => {
+    mockedGet.mockImplementation((url: string) => {
       if (url.includes('progress-distribution')) return Promise.resolve({ data: [] })
       if (url.includes('weekly-severity'))       return Promise.resolve({ data: [] })
       if (url.includes('avg-dev-to-live'))        return Promise.resolve({ data: { avg_hours: null, live_count: 0 } })
@@ -89,16 +92,16 @@ describe('AnalyticsPage', () => {
     render(<AnalyticsPage />)
 
     await waitFor(() => {
-      const calls = (mockedAxios.get as ReturnType<typeof vi.fn>).mock.calls.map((c: string[][]) => c[0])
-      expect(calls.some((u: string) => u.includes('progress-distribution'))).toBe(true)
-      expect(calls.some((u: string) => u.includes('weekly-severity'))).toBe(true)
-      expect(calls.some((u: string) => u.includes('avg-dev-to-live'))).toBe(true)
-      expect(calls.some((u: string) => u.includes('funnel'))).toBe(true)
+      const calls = mockedGet.mock.calls.map((c) => c[0])
+      expect(calls.some((u) => u.includes('progress-distribution'))).toBe(true)
+      expect(calls.some((u) => u.includes('weekly-severity'))).toBe(true)
+      expect(calls.some((u) => u.includes('avg-dev-to-live'))).toBe(true)
+      expect(calls.some((u) => u.includes('funnel'))).toBe(true)
     })
   })
 
   it('shows empty chart message when no data available', async () => {
-    mockedAxios.get = vi.fn().mockImplementation((url: string) => {
+    mockedGet.mockImplementation((url: string) => {
       if (url.includes('avg-dev-to-live')) return Promise.resolve({ data: { avg_hours: null, live_count: 0 } })
       return Promise.resolve({ data: [] })
     })

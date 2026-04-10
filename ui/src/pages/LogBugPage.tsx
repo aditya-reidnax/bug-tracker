@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axios from 'axios'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,7 +60,7 @@ export default function LogBugPage() {
       setTimeout(() => setStatus('idle'), 3000)
     } catch (err) {
       setStatus('error')
-      if (api.isAxiosError(err) && err.response?.data?.error) {
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
         setErrorMsg(err.response.data.error)
       } else {
         setErrorMsg('Failed to log bug. Please try again.')
